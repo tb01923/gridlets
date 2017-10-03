@@ -45,9 +45,9 @@ const getNumPartitionsImpl = pipe(
  loadGridTask :: obj -> GridTask -> GridTask
  */
 // const loadGridTask = (channelMetadata) => (gridTaskSrc) => (partition) => {
-const loadGridTask = (gridTaskSrc) => (subChannel) => {
+const loadGridTask = (gridContext) => (gridTaskSrc) => (subChannel) => {
 
-    const gridTask = loadGridTasksFromSource(gridTaskSrc)
+    const gridTask = loadGridTasksFromSource(gridContext,gridTaskSrc)
 
     /*
         this is an IOC pattern, where the GridChannel is asked to select an implementation (based on it's type), and
@@ -123,15 +123,13 @@ const loadGridTask = (gridTaskSrc) => (subChannel) => {
 
         const channelImplementation = getChannelImplementation(streamChannel, channelName)
 
-        const consumerOptions = pipe(
+        const consumerOptions = (pipe(
             setConsumerClientGroup(consumerGroup),
             setPartition(subChannel)
-        );
+        )({}));
 
         // todo: listen might not be queue agnostic
-        channelImplementation.
-        listen(channelName, consumerOptions).
-        on('message', executeTransform)
+        channelImplementation.listen(channelName, consumerOptions).on('message', executeTransform)
     }
 
     gridTask.inputChannel.cata({
@@ -147,6 +145,7 @@ const loadGridTask = (gridTaskSrc) => (subChannel) => {
  execute: given a gridlet, it identifies all channels and creates those topics within kafka-channel, and loads all gridTasks
     listed within a gridlet to run in the current process.
  */
-module.exports.execute = (gridTask) => (subChannel) => {
-    loadGridTask(gridTask)(subChannel)
+module.exports.execute = (gridContext) => (gridTask) => (subChannel) => {
+    console.log('STARTING GRIDLET WORKER')
+    loadGridTask(gridContext)(gridTask)(subChannel)
 }

@@ -20,7 +20,8 @@ Gridlet.prototype.addGridTask = function(gridTask) {
 }
 
 Gridlet.prototype.addGridTaskSrcFile = function(gridTaskSrcFile) {
-    const gridTaskSrc = fs.readFileSync(process.cwd() + "/" + gridTaskSrcFile)
+    const pwd =  process.cwd()
+    const gridTaskSrc = fs.readFileSync(gridTaskSrcFile)
     this.gridTasksSrcFiles.push(gridTaskSrc.toString())
     return this
 }

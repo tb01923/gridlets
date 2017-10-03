@@ -6,16 +6,20 @@ const gridManagerApi = require('./lib/grid-manager-api')
 
 // String -> [String]
 const fileList = function(dir) {
+    // console.log('Reading:', dir)
+    // console.log("from:", __dirname)
     return fs.readdirSync(dir).reduce(function(list, file) {
         var name = path.join(dir, file);
         var isDir = fs.statSync(name).isDirectory();
-        return list.concat(isDir ? fileList(name) : [name]);
+        //return list.concat(isDir ? fileList(name) : [name]);
+        return list.concat(isDir ? [] : [name]);
     }, []);
 }
 
 // [String] ->  [Gridlet]
 const requireGridlets = map((src) => {
-    return require(`${process.cwd()}/${src}`)
+    console.log('requiring:', `${src}`)
+    return require(`${src}`)
 })
 
 module.exports.start = function(gridletsPath, options){
@@ -29,6 +33,9 @@ module.exports.start = function(gridletsPath, options){
 
     const runGridlets = pipe(
         requireGridlets,
+        (x) => {
+           return x
+        } ,
         map(gridManagerApi.execute)
     )
 

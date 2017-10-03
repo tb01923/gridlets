@@ -3,7 +3,7 @@ const monads = require('control.monads')
     , maybeSequence = monads.sequence(Maybe)
 
 const fs = require('fs')
-const {map, filter, lensProp, propIs, head, view, pipe, uniq, reduce } = require('ramda')
+const {map, filter, lensProp, propIs, head, view, pipe, uniq, reduce, curry } = require('ramda')
 
 
 //lenses
@@ -63,6 +63,7 @@ const getContext = (dependencyList) => {
         console: console,
         process: process,
         env: env,
+        require: require,
         setInterval: setInterval,
         basePath: path.dirname(require.main.filename)
     };
@@ -76,19 +77,19 @@ const getContext = (dependencyList) => {
 };
 
 // instantiateTask :: string -> GridTask
-const instantiateTask = function(code) {
+const instantiateTask = curry((gridletContext, code) => {
     const vm = require('vm');
 
-    const context = getContext(global.gridletContext); // Temporary solution
+    const context = getContext(gridletContext); // Temporary solution
     const sandbox = vm.createContext(context);
 
     vm.createContext(sandbox);
     return vm.runInContext(code, sandbox);
-}
+})
 
 // instantiateTaskOntoGridlet :: (Gridlet, string) -> Gridlet
 const instantiateTaskOntoGridlet = function(gridlet, code) {
-    return gridlet.addGridTask(instantiateTask(code));
+    return gridlet.addGridTask(instantiateTask(gridlet.gridContext, code));
 }
 
 /*
@@ -121,7 +122,7 @@ module.exports.extractMetadata = pipe(
  */
 module.exports.loadGridletTasksFromSource = (gridlet) => {
     const loadSource = pipe(
-        viewGridTasksSrcFileLens                            // [String]
+        viewGridTasksSrcFileLens                            // [String (sourceCode)]
         , reduce(instantiateTaskOntoGridlet, gridlet)       // Gridlet
         , Maybe.of                                          // Just Gridlet
     )

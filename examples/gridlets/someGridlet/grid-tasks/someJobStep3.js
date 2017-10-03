@@ -1,7 +1,5 @@
-const log = (x) => {
-    console.log(JSON.stringify(x))
-    return x
-}
+const {pipe} =  require('ramda')
+const {tap} =  require(`${process.cwd()}/examples/gridlets/someGridlet/grid-tasks/some-library`)
 
 /*
  concatenateDateLogAndTerminate :: obj -> obj
@@ -9,11 +7,13 @@ const log = (x) => {
  this is the single parameter version of the callback, which will leverage the framework to forward
  the return value from this function into the channel
  */
-const concatenateDateLogAndTerminate = (nextStep, obj) => {
-    const msg = obj.value + " :: Step3"
-    console.log(msg)
-    return msg
-}
+const concatenateDateLogAndTerminate = pipe(
+    (obj) => obj.value + '::Step3@(' + new Date() + ')',
+    (msg) => msg.replace('::', '\n\t'),
+    tap('logger')
+)
+
+
 
 const inputChannel = GridChannel.of('channelB') //.setConsumerGroup('testCG')
 

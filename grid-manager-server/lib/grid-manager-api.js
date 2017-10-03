@@ -42,11 +42,13 @@ const getPartitionsByName = (partitionName) => (channel) => {
 const setMetadata = rSet(metadataLens)
 
 //todo: channel paritioning needs tobe abstracted away from Kafka
-const sendTaskSourceToWorker = (channelMetadata) => (gridTaskSrc) => {
+const sendTaskSourceToWorker = (channelMetadata, gridContext) => (gridTaskSrc) => {
 
-    const gridTask =  loadGridTasksFromSource(gridTaskSrc);
+    const gridTask =  loadGridTasksFromSource(gridContext, gridTaskSrc);
 
-    const gridTaskChannelMetadata = gridTask.inputChannel.value ? gridTask.inputChannel.value : gridTask.outputChannel.value
+    const gridTaskChannelMetadata = gridTask.inputChannel.value ?
+        gridTask.inputChannel.value :
+        gridTask.outputChannel.value ;
 
     let channelName = gridTaskChannelMetadata.name;
 
@@ -59,14 +61,14 @@ const sendTaskSourceToWorker = (channelMetadata) => (gridTaskSrc) => {
     const numberOfPartitions = getPartitionsByName(filteredChannelData.topic)(gridTaskChannelMetadata);
     // iterate through every partition of this topic
     for (let partition=0; partition < numberOfPartitions; partition++){
-        gridWorkerApi.execute(gridTaskSrc)(partition)
+        gridWorkerApi.execute(gridContext)(gridTaskSrc)(partition)
     }
 };
 
 // loadGridTasks :: Gridlet -> [GridTask]
 const loadGridTasks = (gridlet) => {
     const metadata = viewMetadata(gridlet)
-    const sendTaskSourceToWorkerWithMetaData = sendTaskSourceToWorker(metadata)
+    const sendTaskSourceToWorkerWithMetaData = sendTaskSourceToWorker(metadata, gridlet.gridContext)
     return map(
         sendTaskSourceToWorkerWithMetaData,
         viewGridTasksSrcFile(gridlet)
@@ -100,6 +102,7 @@ const createChannelsTask = (channels) => {
 
 
 module.exports.execute = (gridlet) => {
+    console.log('STARTING GRIDLET SERVER')
 
     /*
      mergeWithGridlet : given the metadata and the reference to gridlet (closure) add the metadata to the gridlet
@@ -108,9 +111,6 @@ module.exports.execute = (gridlet) => {
      */
     const mergeWithGridlet = (metadata) => setMetadata(metadata, gridlet)
 
-    if(!global.gridletContext){
-        global.gridletContext = gridlet.gridContext;
-    }
 
     loadGridletTasksFromSource(gridlet).                        // Just [GridTask]
         chain(getChannels).                                     // Just [GridChannel]

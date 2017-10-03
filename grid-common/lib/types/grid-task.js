@@ -42,3 +42,14 @@ GridTask.prototype.pipeOutput = function(channel){
     this.outputChannel = Maybe.fromNullable(channel)
     return this
 }
+
+// GridTask:pipeOutput :: String -> GridTask
+GridTask.prototype.setContext = function(context){
+    this.context = context ;
+    return this
+}
+
+// GridTask:pipeOutput :: () -> Context
+GridTask.prototype.getContext = function(){
+    return this.context ;
+}

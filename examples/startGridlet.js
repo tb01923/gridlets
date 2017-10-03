@@ -3,8 +3,9 @@
  */
 const gridlet = require('../index').GridletFramework;
 
+
 // Start Kafka Consumer (listener)
 gridlet.start(
-    'gridlets',
+    process.cwd() + '/examples/gridlets/someGridlet',
     {zookeeperConn: "localhost:2181"}
 );

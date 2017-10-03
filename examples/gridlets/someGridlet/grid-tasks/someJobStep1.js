@@ -12,7 +12,9 @@ const onIntervalAddDateAndForward = (interval) => (nextStep, _) => {
     let i = 0
     setInterval(
         () => {
-            const message = "Step1 Message("+ (i++) +") At(" +  new Date() + ")"
+            const message = (i++) + 'Step1@(' +  new Date() + ')'
+            // console.log('Emitting: ', message)
+
             nextStep(message)
         }
         , interval

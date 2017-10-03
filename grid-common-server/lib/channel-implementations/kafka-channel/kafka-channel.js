@@ -42,8 +42,10 @@ KafkaChannel.prototype.createChannels = curry(function(async, topics){
         const _createTopic = () => {
             this.producer.createTopics(topics, false, function(err, result){
                 if(err != null) {
+                    //console.log('create(' +topics+')', err)
                     reject(err)
                 }else {
+                    //console.log('create(' +topics+')', result)
                     resolve(result)
                 }
             });
@@ -69,7 +71,7 @@ KafkaChannel.prototype.getMetaData = curry(function(async, topics) {
                 if(err != null) {
                     reject(err)
                 }else {
-                    console.log("Channel meta", JSON.stringify(result))
+                    //console.log("Channel meta", JSON.stringify(result))
                     resolve(result)
                 }
             });
@@ -80,6 +82,7 @@ KafkaChannel.prototype.getMetaData = curry(function(async, topics) {
         }
         else {
             this.client.on('ready', function () {
+                //console.log('on ready::meta')
                 _createTopic()
             });
         }
@@ -91,6 +94,7 @@ KafkaChannel.prototype.listen = function(topic, options) {
     options.autoCommit = false;
     //options.autoCommitIntervalMs = 10000
 
+    console.log('listen(' +topic + ')', options)
     this.consumer = KafkaConsumer.of(this.client, [{topic: topic}], options);
     return this.consumer;
 }
@@ -116,6 +120,7 @@ KafkaChannel.prototype.send = curry(function(topic, message, partition) {
         }
         else {
             this.producer.on('ready', function () {
+                //console.log('on ready::send')
                 _send()
             });
         }
@@ -129,7 +134,7 @@ KafkaChannel.prototype.setMessageProcessed = function(message) {
             if (err) {
                 reject(err)
             } else {
-                //console.log(data)
+                //console.log('commit data', data)
                 resolve(data)
             }
         });
